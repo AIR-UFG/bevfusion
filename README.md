@@ -80,26 +80,36 @@ After installing these dependencies, please run this command to install the code
 python setup.py develop
 ```
 
-We also provide a [Dockerfile](docker/Dockerfile) to ease environment setup. To get started with docker, please make sure that `nvidia-docker` is installed on your machine. After that, please execute the following command to build the docker image:
+## Docker Setup
+
+We provide a [Dockerfile](docker/Dockerfile) to ease environment setup. Please execute the following command to build the docker image:
 
 ```bash
-cd docker && docker build . -t bevfusion
+docker build -t bevfusion -f docker/Dockerfile .
 ```
 
-We can then run the docker with the following command:
+To run the Docker container, utilize the provided run script with the following parameters:
 
 ```bash
-nvidia-docker run -it -v `pwd`/../data:/dataset --shm-size 16g bevfusion /bin/bash
+./run.sh bevfusion --rm --nvidia --shm-size 8G
 ```
 
-We recommend the users to run data preparation (instructions are available in the next section) outside the docker if possible. Note that the dataset directory should be an absolute path. Within the docker, please run the following command to clone our repo and install custom CUDA extensions:
+- `<image-name>`: The name you assigned to the Docker image during the build process.
+- `--rm`: Automatically remove the container when it exits.
+- `--nvidia`: Run the container with NVIDIA GPU support.
+- `--shm-size`: Set the shared memory size. A larger shared memory size is required for some models.
 
+After running the container, a `shared-folder` directory will be created in the root of the repository. This directory is shared between the host and the container. You can use it to transfer files between the host and the container. It is useful for saving the datasets and models you want to use in the container, as well as saving the results you want to keep.
+
+**Inside the container, install the package:**
+  
 ```bash
-cd home && git clone https://github.com/mit-han-lab/bevfusion && cd bevfusion
 python setup.py develop
 ```
+The package needs to be installed after the image is built because of cuda compatibility issues.
 
-You can then create a symbolic link `data` to the `/dataset` directory in the docker.
+
+We recommend the users to run data preparation (instructions are available in the next section) outside the docker if possible. Note that the dataset directory should be an absolute path.
 
 ### Data Preparation
 
