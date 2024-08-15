@@ -7,7 +7,7 @@ import numpy as np
 import torch
 from mmcv import Config
 from mmcv.parallel import MMDistributedDataParallel
-from mmcv.runner import load_checkpoint
+from mmcv.runner import load_checkpoint, wrap_fp16_model
 from torchpack import distributed as dist
 from torchpack.utils.config import configs
 from tqdm import tqdm
@@ -70,6 +70,9 @@ def main() -> None:
     # build the model and load checkpoint
     if args.mode == "pred":
         model = build_model(cfg.model)
+        fp16_cfg = cfg.get("fp16", None)
+        if fp16_cfg is not None:
+            wrap_fp16_model(model)
         load_checkpoint(model, args.checkpoint, map_location="cpu")
 
         model = MMDistributedDataParallel(
